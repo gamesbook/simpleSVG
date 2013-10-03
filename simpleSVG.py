@@ -84,6 +84,12 @@ class SVG:
     self.bby- self.topmarg - self.botmarg)
         self.svg.write(clippath)
 
+    def format_style(self, k, style):
+        """Change grammar for style."""
+        for key in k.keys():
+            style += key.replace('_', '-') + ':' + str(k[key]) + ';'
+        return style
+
     def ix(self,x): #svg x coordinate in pts as function of various types of user "x"
         if isinstance(x, float):
             return self.leftmarg + (x - self.xmin) * self.xscale
@@ -174,8 +180,7 @@ class SVG:
     def path(self, *a, **k):
         d = k.pop('d', "")
         style = k.pop('style', "")
-        for key in k.keys():
-            style += key.replace('_', '-') + ':' + str(k[key]) + ';'
+        style = self.format_style(k, style)
         if a:
             d += self.pathdata(*a)
         p = '<path '
