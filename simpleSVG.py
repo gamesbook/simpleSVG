@@ -17,7 +17,7 @@
 
 
 import os,sys
-from math import *
+import math
 #from __future__ import print_function
 display_prog = 'inkscape' #command to display images, using optional display() method
 pyvers=sys.version_info[0]
@@ -196,8 +196,7 @@ class SVG:
             style = k.pop('style', "")
             transform = k.pop('transform', "")
             clippath = k.pop('clip_path', "")
-            for key in k.keys():
-                style += key.replace('_','-') + ':' + str(k[key]) + ';'
+            style = self.format_style(k, style)
             self.group_count += 1
             g = '<g '
             if style:
@@ -214,40 +213,35 @@ class SVG:
     def rect(self, x, y, width, height, **k):
         #better than native: negative width and height okay
         style = k.pop('style', "")
-        for key in k.keys():
-            style += key.replace('_','-') + ':' + str(k[key]) + ';'
+        style = self.format_style(k, style)
         d = self.pathdata('M', x, y, 'l', width, 0, 'l', 0, height, 'l',
                           -width, 0, 'Z')
         self.path(d=d, style=style)
 
     def rect2(self, x1, y1, x2, y2, **k):
         style = k.pop('style', "")
-        for key in k.keys():
-            style += key.replace('_','-') + ':' + str(k[key]) + ';'
+        style = self.format_style(k, style)
         d = self.pathdata('M', x1, y1, 'L', x2, y1, 'L', x2, y2, 'L',
                           x1, y2, 'Z')
         self.path(d=d, style=style)
 
     def poly(self, *a, **k):
         style = k.pop('style', "")
-        for key in k.keys():
-            style+=key.replace('_','-')+':'+str(k[key])+';'
+        style = self.format_style(k, style)
         b = [x for x in flattn(a)]
         d = self.pathdata('M',b[0:2],'L',b[2:],'Z')
         self.path(d=d, style=style)
 
     def draw(self, *a, **k):
         style = k.pop('style', "")
-        for key in k.keys():
-            style+=key.replace('_','-')+':'+str(k[key])+';'
+        style = self.format_style(k, style)
         b = [x for x in flattn(a)]
         d = self.pathdata('M', b[0:2], 'L', b[2:])
         self.path(d=d, style=style)
 
     def circle(self, cx, cy, r , **k):
         style=k.pop('style', "")
-        for key in k.keys():
-            style+=key.replace('_','-')+':'+str(k[key])+';'
+        style = self.format_style(k, style)
         p = '<circle cx="%.2f" cy="%.2f" r="%.2f" ' % \
             (self.ix(cx), self.jy(cy), self.sx(r))
         if style:
@@ -256,8 +250,7 @@ class SVG:
 
     def line(self,x1,y1,x2,y2,**k):
         style = k.pop('style', "")
-        for key in k.keys():
-            style+=key.replace('_','-')+':'+str(k[key])+';'
+        style = self.format_style(k, style)
         p = '<line x1="%.2f" y1="%.2f" x2="%.2f" y2="%.2f" ' % \
             (self.ix(x1), self.jy(y1), self.ix(x2), self.jy(y2))
         if style:
@@ -266,8 +259,7 @@ class SVG:
 
     def text(self,x,y,angle,text,**k):
         style = k.pop('style', "")
-        for key in k.keys():
-            style+=key.replace('_','-')+':'+str(k[key])+';'
+        style = self.format_style(k, style)
         p = '<text transform="translate(%8.2f,%8.2f) rotate(%8.2f)" ' % \
             (self.ix(x), self.jy(y), -angle)
         if style:
@@ -280,23 +272,22 @@ class SVG:
     #sector with center at user (x,y), but radius r1 and r2 are in pts:
     def sector(self, x, y, r1, r2, a1, a2, **k):
         style = k.pop('style', "")
-        for key in k.keys():
-            style+=key.replace('_','-')+':'+str(k[key])+';'
+        style = self.format_style(k, style)
         largecircle = '0'
         if (a2 < a1):
             a2, a1 = a1, a2
         if abs(a2 - a1) > 180:
             largecircle = '1'
-        a1 = pi * a1 / 180.
-        a2 = pi * a2 / 180.
-        x11 = r1 * cos(a1)
-        x21 = r2 * cos(a1)
-        x12 = r1 * cos(a2)
-        x22 = r2 * cos(a2)
-        y11 = r1 * sin(a1)
-        y21 = r2 * sin(a1)
-        y12 = r1 * sin(a2)
-        y22 = r2 * sin(a2)
+        a1 = math.pi * a1 / 180.
+        a2 = math.pi * a2 / 180.
+        x11 = r1 * math.cos(a1)
+        x21 = r2 * math.cos(a1)
+        x12 = r1 * math.cos(a2)
+        x22 = r2 * math.cos(a2)
+        y11 = r1 * math.sin(a1)
+        y21 = r2 * math.sin(a1)
+        y12 = r1 * math.sin(a2)
+        y22 = r2 * math.sin(a2)
         d = self.pathdata('M', x, y, 'm', hires(x21), hires(-y21),
                           'a', hires(r2), hires(r2), '0', largecircle + ',0',
                           hires(x22 - x21), hires(-y22 + y21),
@@ -307,33 +298,31 @@ class SVG:
 
     def radial(self, x, y, r1, r2, a1, **k):
         style = k.pop('style',"")
-        for key in k.keys():
-            style+=key.replace('_','-')+':'+str(k[key])+';'
+        style = self.format_style(k, style)
         largecircle = '0'
-        a1 = pi * a1 / 180.
-        x11 = r1 * cos(a1)
-        x21 = r2 * cos(a1)
-        y11 = r1 * sin(a1)
-        y21 = r2 * sin(a1)
+        a1 = math.pi * a1 / 180.
+        x11 = r1 * math.cos(a1)
+        x21 = r2 * math.cos(a1)
+        y11 = r1 * math.sin(a1)
+        y21 = r2 * math.sin(a1)
         d=self.pathdata('M', x, y, 'm', hires(x21), hires(-y21), 'l',
                         hires(x11 - x21), hires(-y11 + y21))
         self.path(d=d, style=style)
 
     def arc(self, x, y, r, a1, a2, **k):
         style = k.pop('style', "")
-        for key in k.keys():
-            style+=key.replace('_','-')+':'+str(k[key])+';'
+        style = self.format_style(k, style)
         largecircle = '0'
         if (a2 < a1):
             a2, a1 = a1, a2
         if abs(a2 - a1) > 180:
             largecircle = '1'
-        a1 = pi * a1 / 180.
-        a2 = pi * a2 / 180.
-        x21 = r * cos(a1)
-        x22 = r * cos(a2)
-        y21 = r * sin(a1)
-        y22 = r * sin(a2)
+        a1 = math.pi * a1 / 180.
+        a2 = math.pi * a2 / 180.
+        x21 = r * math.cos(a1)
+        x22 = r * math.cos(a2)
+        y21 = r * math.sin(a1)
+        y22 = r * math.sin(a2)
         d=self.pathdata('M', x, y, 'm', hires(x21), hires(-y21), 'a',
                         hires(r), hires(r), '0', largecircle + ',0',
                         hires(x22 - x21), hires(-y22 + y21))
@@ -342,8 +331,7 @@ class SVG:
 #COMPOSITE DRAWING
     def square(self, x, y, size, **k): #analog to circle, useful for plot symbol
         style = k.pop('style', "")
-        for key in k.keys():
-            style+=key.replace('_','-')+':'+str(k[key])+';'
+        style = self.format_style(k, style)
         self.group(style=style)
         i, j = hires(self.ix(x)), hires(self.jy(y))
         l = size * 100
@@ -352,12 +340,11 @@ class SVG:
 
     def arrow(self, x1, y1, x2, y2, headsize, **k): #headsize is in pts
         style=k.pop('style',"")
-        for key in k.keys():
-            style+=key.replace('_','-')+':'+str(k[key])+';'
+        style = self.format_style(k, style)
         self.group(style=style)
         i1, j1, i2, j2 = self.ix(x1), self.jy(y1), self.ix(x2), self.jy(y2)
         headsize = self.sx(headsize)
-        r = sqrt((i2 - i1) ** 2 + (j2 - j1) **2)
+        r =  math.sqrt((i2 - i1) ** 2 + (j2 - j1) **2)
         u = (i2 - i1) / r
         v = (j2 - j1) / r
         ai = -.8 * u - .6 * v
@@ -377,11 +364,10 @@ class SVG:
     def fatarrow(self,x1, y1, x2, y2, asize, **k):
         #asize is the half-width of the fat arrow
         style = k.pop('style', "")
-        for key in k.keys():
-            style+=key.replace('_','-')+':'+str(k[key])+';'
+        style = self.format_style(k, style)
         i1, j1, i2, j2 = self.ix(x1), self.jy(y1), self.ix(x2), self.jy(y2)
         asize = self.sx(asize)
-        r = sqrt((i2 - i1) ** 2 + (j2 - j1) ** 2)
+        r =  math.sqrt((i2 - i1) ** 2 + (j2 - j1) ** 2)
         u = asize * (i2-i1)/r
         v = asize * (j2-j1)/r
         polypoints = [hires(q) for q in [
@@ -391,8 +377,7 @@ class SVG:
 
     def windbarb(self, x, y, s, a, h, **k):
         style=k.pop('style', "")
-        for key in k.keys():
-            style+=key.replace('_','-')+':'+str(k[key])+';'
+        style = self.format_style(k, style)
         transform = "translate(%8.2f,%8.2f) rotate(%8.2f) " % \
             (self.ix(x), self.jy(y), a - 90)
         self.group(style=style, transform=transform)
