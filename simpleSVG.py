@@ -229,7 +229,7 @@ class SVG:
         style = k.pop('style', "")
         style = self.format_style(k, style)
         b = [x for x in flattn(a)]
-        d = self.pathdata('M',b[0:2],'L',b[2:],'Z')
+        d = self.pathdata('M', b[0:2], 'L', b[2:], 'Z')
         self.path(d=d, style=style)
 
     def draw(self, *a, **k):
@@ -240,7 +240,7 @@ class SVG:
         self.path(d=d, style=style)
 
     def circle(self, cx, cy, r , **k):
-        style=k.pop('style', "")
+        style = k.pop('style', "")
         style = self.format_style(k, style)
         p = '<circle cx="%.2f" cy="%.2f" r="%.2f" ' % \
             (self.ix(cx), self.jy(cy), self.sx(r))
@@ -323,7 +323,7 @@ class SVG:
         x22 = r * math.cos(a2)
         y21 = r * math.sin(a1)
         y22 = r * math.sin(a2)
-        d=self.pathdata('M', x, y, 'm', hires(x21), hires(-y21), 'a',
+        d = self.pathdata('M', x, y, 'm', hires(x21), hires(-y21), 'a',
                         hires(r), hires(r), '0', largecircle + ',0',
                         hires(x22 - x21), hires(-y22 + y21))
         self.path(d=d, style=style)
@@ -338,8 +338,28 @@ class SVG:
         self.rect2(i - l , j - l, i + l, j + l, style=style)
         self.group()
 
+    def hexagon(self, cx, cy, s, vertical=True, **k):
+        """Centred at cx, cy with side of length 's'"""
+        style = k.pop('style', "")
+        style = self.format_style(k, style)
+        self.group(style=style)
+        if vertical:
+            dx = math.sqrt(s**2 - s**2 / 4)
+            x1, y1 = cx - dx, cy - s / 2
+            x2, y2 = cx, cy - s
+            x3, y3 = cx + dx, cy - s / 2
+            x4, y4 = cx + dx, cy + s / 2
+            x5, y5 = cx, cy + s
+            x6, y6 = cx - dx, cy + s / 2
+        elif not vertical:
+            pass
+        d = self.pathdata('M', x1, y1, 'L', x2, y2, 'L', x3, y3, 'L',
+                          x4, y4, 'L', x5, y5, 'L', x6, y6, 'Z')
+        self.path(d=d, style=style)
+        self.group()
+
     def arrow(self, x1, y1, x2, y2, headsize, **k): #headsize is in pts
-        style=k.pop('style',"")
+        style = k.pop('style',"")
         style = self.format_style(k, style)
         self.group(style=style)
         i1, j1, i2, j2 = self.ix(x1), self.jy(y1), self.ix(x2), self.jy(y2)
@@ -376,7 +396,7 @@ class SVG:
         self.poly(polypoints, style=style)
 
     def windbarb(self, x, y, s, a, h, **k):
-        style=k.pop('style', "")
+        style = k.pop('style', "")
         style = self.format_style(k, style)
         transform = "translate(%8.2f,%8.2f) rotate(%8.2f) " % \
             (self.ix(x), self.jy(y), a - 90)
@@ -562,6 +582,20 @@ def stylestring(**k):
         s += key.replace('_', '-') + ':' + str (k[key]) + ';'
     return s
 
+def hexes_SVG():
+    import simpleSVG
+    sys.stdout.write("A sample plot will be output as testSVG.svg\n")
+    a=simpleSVG.SVG(fname='testSVG.svg', bbx=600, bby=600) #override defaults for bbx and bby
+    a.scale() #uses default scaling of coordinates (x=0. to x=1.0, y=0. to y=1.0)
+    a.group(fill='black')#otherwise fonts are hollow
+    a.yaxis()
+    a.xaxis(dx=.2,form='%9.2e')
+    # hexagon
+    a.hexagon(0.5,0.5,0.25,stroke="blue") #a hexagon is easily made from path
+    a.close()
+    sys.stdout.write("The sample hexes will now be displayed.\n")
+    a.display()
+
 def test_SVG():
     import simpleSVG
     sys.stdout.write("A sample plot will be output as testSVG.svg\n")
@@ -591,6 +625,7 @@ def test_SVG():
     a.arrow(.5,.5,.7,.4,10,stroke_width=3,stroke='maroon',fill='black') #fill is for the head
     a.group()
     a.path('M',.7,.1,'l',.1,.1,.0,.1,-.1,.1,'Z',fill='gray',stroke='none') #path closed with 'Z ' makes polygon
+    # other shapes
     a.poly(.9,.1,1.,.2,1.,.3,.9,.4,fill='silver',stroke='none') #same poly as above, shifted.  Must use abs. coords.
     a.draw(.9,.1,1.,.2,1.,.3,.9,.4,stroke_width=3) #draw is similar to poly, but not closed
     a.arc(.8,.65,30,20,180,stroke='brown',stroke_width=10) #arc has radius 30, spans angle 20 to 180
@@ -598,7 +633,10 @@ def test_SVG():
     a.radial(.8,.65,60,80,132.5,stroke='purple',stroke_width=15) #draw radial from radius of 60 to 80, at angle 132.5
     a.sector(.7,.85,30,100,10,45,fill='red',stroke='black') #sector has radii 30 and 100, spans angle 10 to 45
     a.rect(.7,.8,.35,.25,fill='none',stroke='aqua',stroke_width=3) #specify with width and height
+    # hexagon
+    a.hexagon(300,300,50,stroke="blue") #a hexagon is easily made from path
     a.rect2(.72,.82,1.03,1.03,fill='none',stroke='yellow',stroke_width=5) #specify with two opposite vertices
+    # text
     a.text(.2,.1,0,'hello',font_size="60pt",fill="lime")
     a.text(.5,.3,60,'again',font_size="48pt",text_anchor='middle') #rotate text by 60 degrees, place middle of text at x,y
     a.group(fill='black')
@@ -616,4 +654,5 @@ def test_SVG():
     a.display()
 
 if __name__=='__main__':
-    test_SVG()
+    #test_SVG()
+    hexes_SVG()
