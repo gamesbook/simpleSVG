@@ -1,0 +1,55 @@
+=========
+simpleSVG
+=========
+
+Brian Mensch
+
+Why another plotting program?
+=============================
+
+simpleSVG translates user-friendly Python commands into an SVG graphics file. It produces only SVG graphics, and the Python is adapted to SVG. If you know a bit about SVG, such as from An SVG Primer for Today's Browsers the Python commands will be more easily learned and effectively applied.
+
+SVG is a vector graphics format. I confess here that when I first heard of the term "vector graphics", I thought it was referring to plots with lots of little arrows. Nope, that is not what it means! Here are some definitions of "vector graphics".
+
+simpleSVG is intended to replace vplot, which produced postscript graphics. Like vplot, simpleSVG is intended to simplify the use of graphics primitives, to make nonstandard plots that are not available in traditional plotting programs.
+
+Key features of simpleSVG
+=========================
+
+SVG attributes such as stroke-width are written as stroke_width when used as a keyword in a argument list. simpleSVG will replace the _ with a - when writing the file.
+
+The SVG editor inkscape (excellent cross-platform free software, highly recommended as a companion to simpleSVG), seems to concatenate style attributes. Instead of stroke="blue", stroke-width="3" we see style="stroke:blue;stroke-width=3". simpleSVG had adopted the latter form, concatenated style strings. That may not have been the cleanest decision for simpleSVG, but that is what was done.
+
+simpleSVG ultimately writes the files in standard SVG coordinates in "pt", with the origin in the top left, the first coordinate increasing to the right and the second coordinate increasing down. These will be called SVG coordinates. Coordinates passed as integers are assumed to be in units of "pt".
+
+Coordinates passed as floats are assumed to be in user coordinates: the conventional x and y with an origin at the user-specified lower-left intersection of the left and bottom margins. Often, the user will specify axes to be drawn at the margins, so the user coordinates are also the familiar Cartesian coordinates of a plot. You may see SVG "user coordinates" defined differently in SVG documentation, here the term refers to the simpleSVG implementation.) When simpleSVG writes to a file, user coordinates are converted to SVG coordinates, according to the linear transformation defined by the user.
+
+Rarely, users need to specify position in SVG coordinates at higher resolution than a "pt". For example, simpleSVG.hires(300.23) is interpreted as an SVG coordinate, while 300.23 is a user coordinate. (In versions of simpleSVG.py less than 0.20, long integers were used for the hi-res coordinates, but a long integer is not a valid type in Python 3.0). 
+
+Installing simpleSVG
+====================
+
+Installing simpleSVG.py can be as simple as keeping a copy in the same directory as the Python programs that will import it. Or keep it in a directory accessible by your PYTHONPATH.
+
+Using simpleSVG
+===============
+
+Invoke ipython (or idle). The >>> of the Python interpreter will appear. At those prompts, enter:
+
+    import simpleSVG 
+    a=simpleSVG.svg_class()  
+    a.scale()
+    a.circle(.5,.5,100,fill='red',stroke='none') 
+    a.rect2(0., .15, 1., .85) 
+    a.close() 
+    ^D
+
+You will produce a file temp.svg, which can be viewed with eog or inkview. (For viewing only, inkview is faster than the view/editor inkscape).
+
+Another test is to simply execute the module simpleSVG.py, which by default runs an enclosed test program at end of the module. One of the best ways to learn how to uses simpleSVG.py is to study the test program at the end of simpleSVG.py. 
+
+Links
+=====
+
+For more, please visit http://mensch.org/simpleSVG/
+
