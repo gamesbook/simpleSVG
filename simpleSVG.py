@@ -13,6 +13,7 @@
 # v0.14 May 12, 2010, added radial
 # v0.20 June 22, 2011.  Now works with both Python 2.6 and Python 3.1
 # v0.30 October 3, 2013. Renaming & spacing to conform to Python PEP8 conventions
+# v0.31 October 6, 2013 Added hexagon, plus test to display
 ####
 
 
@@ -24,6 +25,7 @@ pyvers=sys.version_info[0]
 if pyvers >=3:
     import fractions
     fractype=type(fractions.Fraction(1,2))
+
 
 class SVG:
 
